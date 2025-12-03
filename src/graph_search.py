@@ -1,4 +1,5 @@
 import numpy as np
+from collections import deque
 from .graph import Cell
 from .utils import trace_path
 
@@ -47,9 +48,39 @@ def breadth_first_search(graph, start, goal):
     """
     graph.init_graph()  # Make sure all the node values are reset.
 
-    """TODO (P3): Implement BFS."""
+    # If start is the same as goal, return path with just the start cell
+    if start.i == goal.i and start.j == goal.j:
+        return [Cell(start.i, start.j)]
 
-    # If no path was found, return an empty list.
+    # Initialize BFS structures
+    queue = deque([start])  # Queue for BFS (FIFO)
+    visited = set()  # Set to track visited cells
+    visited.add((start.i, start.j))
+
+    # Mark start cell as visited for visualization
+    graph.visited_cells.append(Cell(start.i, start.j))
+
+    while queue:
+        current = queue.popleft()
+
+        # Check if we've reached the goal
+        if current.i == goal.i and current.j == goal.j:
+            # Found the goal! Trace back the path
+            return trace_path(current, graph)
+
+        # Explore neighbors
+        neighbors = graph.find_neighbors(current.i, current.j)
+        for ni, nj in neighbors:
+            if (ni, nj) not in visited:
+                visited.add((ni, nj))
+                # Set parent relationship
+                graph.parents[(ni, nj)] = (current.i, current.j)
+                # Add to queue
+                queue.append(Cell(ni, nj))
+                # Add to visited cells for visualization
+                graph.visited_cells.append(Cell(ni, nj))
+
+    # If we get here, no path was found
     return []
 
 

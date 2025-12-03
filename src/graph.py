@@ -45,7 +45,8 @@ class GridGraph:
         self.set_collision_radius(collision_radius)
         self.visited_cells = []  # Stores which cells have been visited in order for visualization.
 
-        # TODO: Define any additional member variables to store node data.
+        # Initialize parent tracking dictionary
+        self.parents = {}  # Dictionary to store parent of each cell: {(i,j): (parent_i, parent_j)}
 
     def as_string(self):
         """Returns the map data as a string for visualization."""
@@ -123,7 +124,7 @@ class GridGraph:
         Args:
             r: The collision radius (meters).
         """
-        r_cells = int(np.ceil(r / self.meters_per_cell))  # Radius in cells.
+        r_cells = max(1, int(np.ceil(r / self.meters_per_cell)))  # Radius in cells, minimum 1.
         # Get all the indices in a mask covering the robot.
         r_indices, c_indices = np.indices((2 * r_cells - 1, 2 * r_cells - 1))
         c = r_cells - 1  # Center point of the mask.
@@ -154,7 +155,9 @@ class GridGraph:
         """Returns a Cell object representing the parent of the given cell, or
         None if the node has no parent. This function is used to trace back the
         path after graph search."""
-        # TODO (P3): Return the parent of the node at the cell.
+        parent_coords = self.parents.get((cell.i, cell.j))
+        if parent_coords is not None:
+            return Cell(parent_coords[0], parent_coords[1])
         return None
 
     def init_graph(self):
@@ -165,16 +168,18 @@ class GridGraph:
         odds values. You should use this information to initialize your added
         values, like the distances and the nodes."""
         self.visited_cells = []  # Reset visited cells for visualization.
-
-        # TODO (P3): Initialize your graph nodes.
+        self.parents = {}  # Reset parent tracking dictionary
 
     def find_neighbors(self, i, j):
         """Returns a list of the neighbors of the given cell. This should not
         include any cells outside of the bounds of the graph."""
         nbrs = []
-        # TODO (P3): Return a list of the indices of all the neighbors of the node
-        # at cell (i, j). You should not include any cells that are outside of the
-        # bounds of the graph.
+        # Check the 4 possible neighbors: up, down, left, right
+        directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # (di, dj) pairs
 
-        # HINT: The function is_cell_in_bounds() might come in handy.
+        for di, dj in directions:
+            ni, nj = i + di, j + dj
+            if self.is_cell_in_bounds(ni, nj) and not self.check_collision(ni, nj):
+                nbrs.append((ni, nj))
+
         return nbrs

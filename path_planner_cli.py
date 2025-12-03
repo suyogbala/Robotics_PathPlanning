@@ -11,6 +11,7 @@ def parse_args():
     parser.add_argument("--goal", type=int, nargs=2, required=True, help="Goal cell.")
     parser.add_argument("--algo", type=str, default="bfs", choices=["bfs", "dfs", "astar"],
                         help="Algorithm to use.")
+    parser.add_argument("-r", "--collision-radius", type=float, default=0.15, help="Collision radius (meters).")
 
     args = parser.parse_args()
 
@@ -21,7 +22,7 @@ if __name__ == "__main__":
     args = parse_args()
 
     # Construct the graph.
-    graph = GridGraph(args.map)
+    graph = GridGraph(args.map, collision_radius=args.collision_radius)
     # Construct the start and goal cells.
     start, goal = Cell(*args.start), Cell(*args.goal)
 
@@ -30,6 +31,7 @@ if __name__ == "__main__":
         path = a_star_search(graph, start, goal)
     elif args.algo == "bfs":
         path = breadth_first_search(graph, start, goal)
+        print(len(path))
     elif args.algo == "dfs":
         path = depth_first_search(graph, start, goal)
     else:
